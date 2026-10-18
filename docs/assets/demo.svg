@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="840" height="180" viewBox="0 0 840 180" role="img" aria-labelledby="t d">
+  <title id="t">DataSovereign local access flow</title>
+  <desc id="d">A file is imported locally, an application receives a scoped token, reads through the loopback API, and access can be revoked.</desc>
+  <rect width="840" height="180" rx="20" fill="#f3f7f5"/>
+  <g font-family="Arial, sans-serif" text-anchor="middle" font-size="16" fill="#14372c">
+    <rect x="24" y="54" width="168" height="72" rx="14" fill="#d7e8df"/><text x="108" y="97">Import locally</text>
+    <rect x="232" y="54" width="168" height="72" rx="14" fill="#d7e8df"/><text x="316" y="97">Scope token</text>
+    <rect x="440" y="54" width="168" height="72" rx="14" fill="#d7e8df"/><text x="524" y="97">Read on loopback</text>
+    <rect x="648" y="54" width="168" height="72" rx="14" fill="#f7dfdc"/><text x="732" y="97">Revoke</text>
+  </g>
+  <g stroke="#2d765d" stroke-width="4" stroke-linecap="round">
+    <path d="M198 90h28m180 0h28m180 0h28"/>
+  </g>
+  <g fill="#2d765d">
+    <circle cx="212" cy="90" r="5"><animate attributeName="cx" values="200;225;200" dur="4s" repeatCount="indefinite"/></circle>
+    <circle cx="420" cy="90" r="5"><animate attributeName="cx" values="408;433;408" dur="4s" begin="1s" repeatCount="indefinite"/></circle>
+    <circle cx="628" cy="90" r="5"><animate attributeName="cx" values="616;641;616" dur="4s" begin="2s" repeatCount="indefinite"/></circle>
+  </g>
+</svg>

@@ -1,0 +1,22 @@
+name: Tests and privacy guard
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: python -m pip install -e . pytest httpx
+      - run: python -m pytest -q
+      - name: Core size
+        shell: pwsh
+        run: |
+          $lines = (Get-ChildItem datasovereign -Filter *.py -File | Get-Content | Measure-Object -Line).Lines
+          if ($lines -ge 1500) { throw "Core has $lines lines (limit 1499)" }
+      - name: Reject obvious local data
+        shell: pwsh
+        run: |
+          $bad = git ls-files | Select-String -Pattern '(^|/)(\.tmp|data|vault|exports|__pycache__)/|\.db$|\.pem$|\.p12$|\.pfx$'
+          if ($bad) { throw "Possible local data files tracked: $bad" }
