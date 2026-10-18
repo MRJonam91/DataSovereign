@@ -8,6 +8,6 @@
 - [x] Modello delle minacce con limiti espliciti / Threat model with explicit limits.
 - [x] Test di rilascio su Windows: 11 passati; wheel creato e contenuto verificato. / Windows release tests: 11 passed; wheel built and contents inspected.
 - [x] File candidati controllati per segreti, identificativi e dati di vault; repository Git nuovo senza storia precedente. / Candidate files scanned for secrets, identifiers and vault data; new Git repository without prior history.
-- [ ] Verifica remota del commit e della visibilità / Remote commit and visibility verification.
+- [x] CI GitHub riuscita, commit remoto e visibilità pubblica verificati / GitHub CI passed; remote commit and public visibility verified.
 
 L'alfa non dichiara certificazione di sicurezza. / This alpha makes no security certification claim.
