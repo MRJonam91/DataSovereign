@@ -1,3 +1,4 @@
 include README.it.md CHANGELOG.md LICENSING.md SECURITY.md ASSETS.md
+include CONTRIBUTING.md CLA.md CODE_OF_CONDUCT.md SUPPORT.md COMMERCIAL-LICENSE.md
 recursive-include docs *.md *.svg
 recursive-include tests *.py
