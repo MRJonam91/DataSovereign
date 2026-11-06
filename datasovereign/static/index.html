@@ -3,15 +3,15 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>DataSovereign α</title>
+  <title>DataSovereign · Vault locale</title>
   <link rel="stylesheet" href="/static/app.css">
   <script src="/static/app.js" defer></script>
 </head>
 <body>
   <div class="shell">
     <header class="masthead">
-      <div class="brand">DataSovereign <span>α</span></div>
-      <div class="masthead-right"><span class="local-dot" aria-hidden="true"></span> Vault locale su questo dispositivo</div>
+      <div class="brand">DataSovereign <span>1.0</span></div>
+      <div class="masthead-right"><span class="local-dot" aria-hidden="true"></span> Vault locale <button id="refresh-button" type="button">Aggiorna</button><button id="lock-button" type="button">Blocca sessione</button></div>
     </header>
 
     <main>
@@ -19,7 +19,7 @@
         <div>
           <p class="eyebrow">Controllo degli accessi</p>
           <h1 id="page-title">I tuoi dati.<br>Le tue regole.</h1>
-          <p class="intro-copy">Importa documenti, autorizza un'app per una raccolta e revoca l'accesso alla API quando vuoi.</p>
+          <p class="intro-copy">Importa documenti, scegli quali condividere con un'app e revoca l'accesso quando vuoi.</p>
         </div>
         <div class="metrics" aria-label="Riepilogo del vault">
           <div><strong id="count-collections">0</strong><span>Raccolte</span></div>
@@ -55,7 +55,18 @@
           </section>
         </div>
 
-        <div class="section-row"><span>02</span><h2>Deleghe</h2><p>Ogni token dà accesso tramite la API in sola lettura a una raccolta, fino alla scadenza.</p></div>
+        <section class="panel documents-panel" aria-labelledby="documents-title">
+          <h3 id="documents-title">Documenti nel vault</h3>
+          <div class="document-filters">
+            <div><label for="resource-search">Cerca per nome</label><input id="resource-search" type="search" placeholder="Nome del documento"></div>
+            <div><label for="resource-collection">Raccolta</label><select id="resource-collection"><option value="">Tutte le raccolte</option></select></div>
+            <label class="checkbox-label"><input id="show-trash" type="checkbox">Mostra cestino</label>
+          </div>
+          <p id="resource-count" class="helper"></p>
+          <div id="resources-list" class="record-list"></div>
+        </section>
+
+        <div class="section-row"><span>02</span><h2>Deleghe</h2><p>Autorizza solo i documenti selezionati. Le importazioni future richiedono un nuovo consenso.</p></div>
         <div class="two-column">
           <section class="panel" aria-labelledby="grant-title">
             <h3 id="grant-title">Concedi accesso</h3>
@@ -66,6 +77,18 @@
               <input id="grant-purpose" maxlength="200" required placeholder="Es. Cercare nei contratti">
               <label for="grant-collection">Raccolta accessibile</label>
               <select id="grant-collection" required></select>
+              <fieldset class="grant-scope">
+                <legend>Documenti autorizzati</legend>
+                <label for="scope-search">Cerca nella raccolta</label>
+                <input id="scope-search" type="search" placeholder="Nome del documento">
+                <button id="select-all-documents" type="button">Seleziona risultati</button>
+                <button id="clear-documents" type="button">Azzera selezione</button>
+                <div id="grant-documents"></div>
+                <button id="scope-prev" type="button">Precedente</button>
+                <button id="scope-next" type="button">Successiva</button>
+                <p id="scope-page" class="helper" aria-live="polite"></p>
+                <p id="scope-count" class="helper" aria-live="polite">Seleziona almeno un documento.</p>
+              </fieldset>
               <label for="grant-duration">Durata</label>
               <select id="grant-duration">
                 <option value="15">15 minuti</option>
@@ -78,8 +101,9 @@
             <div id="new-token" class="token-panel" hidden>
               <h4>Token creato</h4>
               <p>Copialo ora: non verrà mostrato di nuovo.</p>
-              <div class="form-row"><input id="token-value" type="text" readonly aria-label="Token della nuova delega"><button id="copy-token" type="button">Copia</button></div>
+              <div class="form-row"><input id="token-value" type="password" readonly aria-label="Token della nuova delega"><button id="copy-token" type="button">Copia</button><button id="hide-token" type="button">Nascondi</button></div>
               <p class="helper">L'app deve inviarlo come <code>Authorization: Bearer TOKEN</code> alle API locali.</p>
+              <p id="api-address" class="helper"></p>
             </div>
           </section>
           <section class="panel" aria-labelledby="grants-title">
@@ -92,7 +116,9 @@
         <div class="two-column lower">
           <section class="panel" aria-labelledby="audit-title">
             <h3 id="audit-title">Attività recente</h3>
+            <label for="audit-outcome">Filtra esito</label><select id="audit-outcome"><option value="">Tutti</option><option value="allowed">Consentito</option><option value="denied">Negato</option><option value="error">Errore</option></select>
             <div id="audit-list" class="record-list audit-list"></div>
+            <button id="audit-more" type="button" hidden>Carica altri eventi</button>
           </section>
           <section class="panel export-panel" aria-labelledby="export-title">
             <h3 id="export-title">Esporta i dati</h3>
@@ -100,10 +126,24 @@
             <button id="export-button" type="button">Scarica ZIP</button>
           </section>
         </div>
+        <div class="two-column recovery">
+          <section class="panel" aria-labelledby="backup-title">
+            <h3 id="backup-title">Backup e verifica</h3>
+            <p>Il backup cifra documenti e metadati con DPAPI. Si ripristina con lo stesso account Windows sullo stesso dispositivo; non è un backup portabile per una reinstallazione.</p>
+            <div class="action-row"><button id="backup-button" type="button">Scarica backup cifrato</button><button id="health-button" type="button">Verifica integrità</button></div>
+            <p id="health-result" class="helper" role="status"></p>
+          </section>
+          <section class="panel" aria-labelledby="restore-title">
+            <h3 id="restore-title">Ripristina backup</h3>
+            <p>Richiede un vault vuoto. Tutte le deleghe recuperate saranno revocate; dovrai crearne di nuove.</p>
+            <form id="restore-form" class="stack-form"><label for="restore-file">Backup ZIP cifrato, massimo 64 MiB</label><input id="restore-file" type="file" accept=".zip" required><button type="submit">Ripristina nel vault vuoto</button></form>
+            <p id="restore-note" class="helper"></p>
+          </section>
+        </div>
         <p class="security-note">Il controllo riguarda questa API. Un'app con accesso diretto ai file dell'account Windows può aggirare le deleghe. La finalità dichiarata non limita l'uso di copie già scaricate.</p>
       </div>
     </main>
-    <footer><span>DataSovereign α</span><span>Servizio locale · Windows</span></footer>
+    <footer><span>DataSovereign</span><span>Servizio locale · Windows</span></footer>
   </div>
 </body>
 </html>

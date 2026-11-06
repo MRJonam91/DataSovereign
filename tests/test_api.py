@@ -44,6 +44,7 @@ def test_wrong_collection_resource_is_hidden(tmp_path):
     vault = Store(tmp_path)
     client = TestClient(create_app(vault, "owner-secret"), base_url="http://127.0.0.1")
     docs = vault.create_collection("Docs")
+    vault.import_resource(docs["id"], "doc.txt", b"doc")
     photos = vault.create_collection("Photos")
     photo = vault.import_resource(photos["id"], "private.jpg", b"secret")
     grant = vault.create_grant("Agent", "Docs", docs["id"], 30)
