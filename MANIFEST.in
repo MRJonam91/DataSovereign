@@ -1,0 +1,3 @@
+include README.it.md CHANGELOG.md LICENSING.md SECURITY.md ASSETS.md
+recursive-include docs *.md *.svg
+recursive-include tests *.py

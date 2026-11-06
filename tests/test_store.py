@@ -84,6 +84,7 @@ def test_export_enforces_limit(tmp_path):
 def test_export_includes_complete_audit_not_only_dashboard_window(vault, monkeypatch):
     monkeypatch.setattr("datasovereign.store.DASHBOARD_AUDIT_LIMIT", 2)
     collection = vault.create_collection("Documenti")
+    vault.import_resource(collection["id"], "a.txt", b"a")
     grant = vault.create_grant("Agent", "Search", collection["id"], 30)
     for _ in range(3):
         vault.list_resources(grant["token"])

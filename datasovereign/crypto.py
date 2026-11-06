@@ -11,7 +11,7 @@ class _DataBlob(ctypes.Structure):
 
 def _transform(data: bytes, decrypt: bool) -> bytes:
     if os.name != "nt":
-        raise RuntimeError("Questa alfa richiede Windows DPAPI")
+        raise RuntimeError("DataSovereign richiede Windows DPAPI")
     if not isinstance(data, bytes):
         raise TypeError("data must be bytes")
 
@@ -31,7 +31,7 @@ def _transform(data: bytes, decrypt: bool) -> bytes:
     if decrypt:
         success = crypt32.CryptUnprotectData(ctypes.byref(incoming), None, None, None, None, 0x1, ctypes.byref(outgoing))
     else:
-        success = crypt32.CryptProtectData(ctypes.byref(incoming), "DataSovereign alpha", None, None, None, 0x1, ctypes.byref(outgoing))
+        success = crypt32.CryptProtectData(ctypes.byref(incoming), "DataSovereign", None, None, None, 0x1, ctypes.byref(outgoing))
     if not success:
         raise OSError(ctypes.get_last_error(), "Windows DPAPI operation failed")
     try:

@@ -1,53 +1,38 @@
-# DataSovereign α
+# DataSovereign 1.0
 
-[English](README.md) · [Sicurezza](SECURITY.md) · [API](docs/api.md)
+[English](README.md) · [Download](https://github.com/MRJonam91/DataSovereign/releases/latest) · [API](docs/api.md) · [Sicurezza](SECURITY.md)
 
-![Diagramma animato di import locale, delega circoscritta, lettura e revoca](docs/assets/demo.svg)
+![Importazione locale, delega, lettura e revoca](docs/assets/demo.svg)
 
-DataSovereign permette di importare documenti in un vault locale e concedere a un'app accesso in sola lettura a una raccolta selezionata, con scadenza e revoca.
+DataSovereign è un vault locale per un singolo utente Windows. Importi copie cifrate dei tuoi documenti, scegli quali può leggere un'app e le consegni un token temporaneo. Puoi revocarlo quando vuoi e consultare le decisioni registrate nell'audit.
 
-L'alfa funziona su Windows, per un solo utente, sul proprio computer. I documenti importati sono copie cifrate per l'account Windows corrente. Le app autorizzate accedono solo tramite API su `127.0.0.1`.
+## Installazione e avvio
 
-## Avvio
-
-Richiede Python 3.11 o successivo. Dalla cartella del progetto:
+Servono Windows e Python 3.11 o successivo. Scarica il wheel da [GitHub Releases](https://github.com/MRJonam91/DataSovereign/releases/latest) e apri PowerShell nella cartella dei download:
 
 ```powershell
-python -m pip install -e .
+python -m pip install .\datasovereign-1.0.0-py3-none-any.whl
 python -m datasovereign serve
 ```
 
-Il comando mostra un URL locale con una chiave di amministrazione temporanea. Aprilo nel browser, importa file in una raccolta, crea una delega e copia il token mostrato una sola volta all'applicazione. Alla chiusura del server la chiave di amministrazione scade. I dati restano in `%LOCALAPPDATA%\DataSovereign\alpha` salvo `--data-dir`.
+Se parti dal codice sorgente, installa con `python -m pip install .`. Apri l'URL locale mostrato nel terminale e tienilo privato. La chiave di amministrazione dura fino all'arresto del servizio con Ctrl+C.
 
-## API per le applicazioni
+Crea una raccolta, importa i documenti e seleziona i file da condividere. Copia il token della delega quando compare. Per un agente AI, autorizza solo i documenti necessari e tieni il suo ambiente separato dalle cartelle originali. L'app invia `Authorization: Bearer <token>` alla [API locale](docs/api.md). I nuovi file importati restano fuori dalle deleghe esistenti. Un documento recuperato dal cestino richiede un nuovo consenso.
 
-Usa il token della delega nell'header `Authorization: Bearer <token>`:
+## Aggiornamento dall'alfa
 
-```powershell
-curl.exe -H "Authorization: Bearer TOKEN" http://127.0.0.1:8765/v1/resources
-curl.exe -H "Authorization: Bearer TOKEN" http://127.0.0.1:8765/v1/resources/RESOURCE_ID/content --output documento.bin
-```
+Ferma il servizio e copia l'intera cartella del vault. Se avevi installato il vecchio pacchetto, rimuovilo con `python -m pip uninstall datasovereign-alpha`, poi installa la 1.0. La cartella predefinita resta `%LOCALAPPDATA%\DataSovereign\alpha`. Se usavi `--data-dir`, indica lo stesso percorso. Alla prima apertura il programma migra il database e salva una copia dei metadati chiamata `vault.pre-beta.db`. Le vecchie deleghe conservano i documenti disponibili al momento della migrazione. Controllale e revocale se necessario. Per tornare alla versione precedente usa la copia integrale del vault.
 
-Una delega consente solo `list` e `read` nella raccolta scelta, fino alla scadenza o alla revoca. L'API non accetta percorsi del filesystem.
+## Backup, export e integrità
 
-## Esportazione
+- **Backup cifrato (64 MiB).** Documenti e manifest sono protetti con Windows DPAPI. Il ripristino richiede lo stesso account Windows, lo stesso dispositivo e un vault vuoto. Le deleghe recuperate sono tutte revocate.
+- **Export in chiaro (50 MiB).** Scarica i documenti attivi e i metadati in uno ZIP per trasferirli. Conserva l'archivio in un luogo protetto.
+- **Integrità.** Usa `python -m datasovereign doctor` o la verifica nella dashboard. Il limite di importazione è 10 MiB per documento.
 
-La dashboard offre un export ZIP con documenti decifrati e JSON di raccolte, deleghe senza token e audit. Il file ZIP è in chiaro: conservalo in un luogo adeguato e cancellalo quando non serve.
+L'API funziona solo in locale. Un programma eseguito con il tuo account Windows può leggere i file originali e può tentare di accedere direttamente al vault. I metadati SQLite sono in chiaro. Un destinatario può conservare le copie già scaricate e chi accede direttamente al database può modificare l'audit. Consulta il [modello delle minacce](docs/security/alpha-threat-model.md) prima di usare documenti sensibili.
 
-## Limiti dell'alfa
+Codice con licenza [AGPL-3.0-only](LICENSE). Vedi [licenze](LICENSING.md), [condizioni per contribuire](CONTRIBUTING.md), [supporto](SUPPORT.md) e [piano di sviluppo](docs/release-plan.md).
 
-- Le copie originali importate restano dove si trovavano.
-- Nomi dei file, raccolte, deleghe e audit sono in SQLite in chiaro; il contenuto dei file è protetto con Windows DPAPI.
-- La cifratura è legata all'account Windows: un altro account o una nuova installazione Windows non può decifrare il vault senza una strategia di migrazione futura.
-- Un'app che ha già scaricato dati può conservarli dopo la revoca.
-- Il controllo vale per le richieste alla API DataSovereign. Un programma avviato con gli stessi permessi Windows dell'utente può leggere direttamente i file originali o tentare di accedere al vault. Per l'agente AI usa un ambiente isolato o un'integrazione che riceve solo il token API.
-- La finalità è dichiarata e registrata, ma il software non può verificare per quale scopo l'app usa una copia ricevuta.
-- Un programma malevolo in esecuzione con lo stesso account Windows può agire a nome dell'utente.
-- L'audit è append-only nell'applicazione, non è a prova di alterazione da parte di un amministratore del dispositivo.
-- Dimensione massima per file: 10 MiB. Dimensione massima del vault esportabile: 50 MiB.
+## Sostieni il progetto
 
-Vedi [API](docs/api.md) e [modello delle minacce](docs/security/alpha-threat-model.md).
-
-## Licenza e supporto
-
-Codice: [AGPL-3.0-only](LICENSE). Vedi [dettagli sulle licenze](LICENSING.md), [condizioni per contribuire](CONTRIBUTING.md) e [supporto](SUPPORT.md). Le richieste di licenza commerciale sono descritte in [COMMERCIAL-LICENSE.md](COMMERCIAL-LICENSE.md).
+Per sostenere la manutenzione puoi usare il pulsante **Sponsor** della repository oppure [Ko-fi](https://ko-fi.com/mrjonam), [Buy Me a Coffee](https://buymeacoffee.com/mrjonam) o [PayPal](https://paypal.me/manorollo).

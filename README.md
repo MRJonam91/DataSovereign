@@ -1,41 +1,38 @@
-# DataSovereign α
+# DataSovereign 1.0
 
-[Italiano](README.it.md) · [Security](SECURITY.md) · [API](docs/api.md)
+[Italiano](README.it.md) · [Downloads](https://github.com/MRJonam91/DataSovereign/releases/latest) · [API](docs/api.md) · [Security](SECURITY.md)
 
-![Animated diagram of local import, scoped delegation, read and revocation](docs/assets/demo.svg)
+![Local import, delegation, reading and revocation](docs/assets/demo.svg)
 
-DataSovereign is a local document vault for one Windows user. It imports encrypted copies of selected files and gives an application temporary, read-only access to one collection through a loopback API. Access can be revoked and decisions are recorded in an audit log.
+DataSovereign is a local document vault for one Windows user. Import encrypted copies, choose exactly which documents an application can read, and give it a temporary token. The vault records access decisions and lets you revoke a delegation at any time.
 
-**Status:** usable local alpha, not independently security audited. Use copies of test documents first. This project is about controlled access, not selling personal data.
+## Install and start
 
-## Run locally
-
-Requires Windows and Python 3.11 or later. From this directory:
+Requires Windows and Python 3.11 or later. Download the wheel from [GitHub Releases](https://github.com/MRJonam91/DataSovereign/releases/latest) and open PowerShell in your download folder:
 
 ```powershell
-python -m pip install -e .
+python -m pip install .\datasovereign-1.0.0-py3-none-any.whl
 python -m datasovereign serve
 ```
 
-The command prints a local URL containing a temporary administrator key. Open it in the browser, import files into a collection and create a delegation. Its token is displayed once. The administrator key expires when the server stops. The default vault directory is `%LOCALAPPDATA%\DataSovereign\alpha`; `--data-dir` can select another directory.
+From a source checkout, use `python -m pip install .` instead. Open the local URL printed in the terminal. Keep the link private. Its administrator key remains valid until you stop the server with Ctrl+C.
 
-## Application API
+In the dashboard, create a collection, import documents and select the files to share. Copy the delegation token when it appears. For an AI agent, grant only the documents it needs and keep its environment separate from the original folders. The application sends `Authorization: Bearer <token>` to the [local API](docs/api.md). New imports never join an existing delegation. Restoring a file from trash requires new consent.
 
-Send the delegated token as `Authorization: Bearer <token>` to `http://127.0.0.1:8765`. An application can list and read only within its selected collection until the delegation expires or is revoked. See [API documentation](docs/api.md). The API does not accept filesystem paths.
+## Upgrade from the alpha
 
-## Export and limits
+Stop the old service and save a copy of the vault directory with the service stopped. If you installed the old package, uninstall it with `python -m pip uninstall datasovereign-alpha`, then install 1.0. The default directory stays at `%LOCALAPPDATA%\DataSovereign\alpha`. Use the same `--data-dir` if you set a custom directory. The first open migrates the database and saves a metadata copy called `vault.pre-beta.db`. Existing delegations retain the documents available at migration time. Review and revoke them if needed. Use the saved vault copy if you need to run the older version again.
 
-The dashboard exports a ZIP containing decrypted documents, collection metadata, delegation records without tokens, and audit entries. **That ZIP is plaintext**: protect it and delete it when no longer needed.
+## Backup, export and integrity
 
-- Imported original files stay in their original locations. Delegation does not restrict a program that already has access to those files under the same Windows account.
-- File contents in the vault use Windows user-scoped DPAPI. File names, collection names, delegation metadata and audit entries remain plaintext in SQLite.
-- A recipient may retain data downloaded before revocation. The recorded purpose cannot be enforced after delivery.
-- Another Windows account or reinstalled Windows cannot decrypt the vault without a future migration and recovery method. Do not make it the only copy of important documents.
-- The audit is append-only within the application, not tamper-proof against a device administrator.
-- Import limit: 10 MiB per file. Export limit: 50 MiB per vault.
+- **Encrypted backup (64 MiB):** documents and manifest use Windows DPAPI. Restore with the same Windows account and device into an empty vault. Recovered delegations are revoked.
+- **Plaintext export (50 MiB):** active documents and metadata in ZIP format, for portability. Store it securely.
+- **Integrity:** run `python -m datasovereign doctor` or use the dashboard to check readability. Each imported document can be up to 10 MiB.
 
-Read the [threat model](docs/security/alpha-threat-model.md) before using the vault with an AI agent. Give the agent only a scoped API token in an isolated environment, not direct access to the Windows folders being protected.
+The API is loopback only. Programs that already run as your Windows user can access the original files and may be able to access vault data directly. The SQLite metadata is plaintext. A recipient can keep copies it already downloaded. The application audit can be changed by someone with direct access to the database. See the [threat model](docs/security/alpha-threat-model.md) before using sensitive documents.
 
-## License and support
+Code is licensed under [AGPL-3.0-only](LICENSE). See [licensing](LICENSING.md), [contribution terms](CONTRIBUTING.md), [support](SUPPORT.md), and the [development plan](docs/release-plan.md).
 
-Code: [AGPL-3.0-only](LICENSE). See [licensing details](LICENSING.md), [contribution terms](CONTRIBUTING.md), and [support options](SUPPORT.md). Commercial licensing enquiries are described in [COMMERCIAL-LICENSE.md](COMMERCIAL-LICENSE.md).
+## Support the project
+
+To support maintenance, use the repository's **Sponsor** button or visit [Ko-fi](https://ko-fi.com/mrjonam), [Buy Me a Coffee](https://buymeacoffee.com/mrjonam) or [PayPal](https://paypal.me/manorollo).
